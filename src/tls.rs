@@ -12,11 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#[cfg(feature = "boring")]
 mod boring;
+#[cfg(feature = "openssl")]
+mod openssl;
 
 use std::sync::Arc;
 
+#[cfg(feature = "boring")]
 pub use crate::tls::boring::*;
+#[cfg(feature = "openssl")]
+pub use crate::tls::openssl::*;
 use hyper::http::uri::InvalidUri;
 
 #[derive(thiserror::Error, Debug, Clone)]

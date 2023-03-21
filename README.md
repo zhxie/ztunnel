@@ -21,9 +21,9 @@ If a feature is not directly used to implement the node proxy component in ambie
 
 ## Building
 
-### FIPS
+### FIPS BoringSSL
 
-Ztunnel builds currently enable the `fips` Cargo feature by default, which in turn enables the `fips` feature
+Ztunnel builds currently enable the `boring-fips` Cargo feature by default, which in turn enables the `fips` feature
 on [BoringSSL](https://github.com/cloudflare/boring).
 
 FIPS has
@@ -66,20 +66,28 @@ This manual twiddling of environment vars is not ideal but given that the altern
 
 Note that the Dockerfiles used to build these vendored `boringssl` builds may be found in the respective vendor directories, and can serve as a reference for the build environment needed to generate FIPS-compliant ztunnel builds.
 
-### Non-FIPS
+### Non-FIPS BoringSSL
 
 If you are building for a platform we don't include vendored FIPS `boringssl` binaries for, or you don't want or need FIPS compliance, note that currently non-FIPS builds are **not supported** by us. However you may build `ztunnel` with a FIPS-less `boringssl` by doing the following:
 
 1. Comment out all of the `BORING_BSSL_*` environment variables in `.cargo/config.toml` entirely.
-1. Run `cargo build --no-default-features`
+1. Run `cargo build --no-default-features --features=boring`
 
 Some IDEs (such as the [Intellij-series](https://github.com/intellij-rust/intellij-rust/issues/9757)) do not support
-globally applying arguments to cargo. In this case, it is probably easier to remove `fips` as a default feature in
+globally applying arguments to cargo. In this case, it is probably easier to remove `boring-fips` as a default feature in
 `Cargo.toml`.
 
 ```toml
 # ...
 [features]
-default = []
+default = ["boring"]
 # ...
 ```
+
+### OpenSSL
+
+Ztunnel also allows to build with OpenSSL. Different from statically linking library in BoringSSL builds, OpenSSL builds will link system OpenSSL dynamically. As a result, you can enable [FIPS-140](https://www.openssl.org/docs/fips.html) and other modules by modifying OpenSSL config file. You may build `ztunnel` with `openssl` by doing the following:
+
+1. Run `cargo build --no-default-features --features=openssl`
+
+You can also follow the instructions above to enable `openssl` in various IDEs.
