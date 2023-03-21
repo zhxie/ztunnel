@@ -28,6 +28,7 @@ use ztunnel::test_helpers::components::WorkloadManager;
 use ztunnel::test_helpers::helpers::initialize_telemetry;
 use ztunnel::test_helpers::netns::{Namespace, Resolver};
 use ztunnel::test_helpers::*;
+use ztunnel::tls::connect;
 
 macro_rules! function {
     () => {{
@@ -356,9 +357,7 @@ async fn test_waypoint_bypass() -> anyhow::Result<()> {
             connector.set_use_server_name_indication(false);
             let hbone = SocketAddr::new(srv.ip(), 15008);
             let tcp_stream = TcpStream::connect(hbone).await.unwrap();
-            let tls_stream = tokio_boring::connect(connector, "", tcp_stream)
-                .await
-                .unwrap();
+            let tls_stream = connect(connector, "", tcp_stream).await.unwrap();
             let (mut request_sender, connection) = builder.handshake(tls_stream).await.unwrap();
             // spawn a task to poll the connection and drive the HTTP state
             tokio::spawn(async move {
@@ -412,9 +411,7 @@ async fn test_hbone_ip_mismatch() -> anyhow::Result<()> {
             let tcp_stream = TcpStream::connect(app.proxy_addresses.inbound)
                 .await
                 .unwrap();
-            let tls_stream = tokio_boring::connect(connector, "", tcp_stream)
-                .await
-                .unwrap();
+            let tls_stream = connect(connector, "", tcp_stream).await.unwrap();
             let (mut request_sender, connection) = builder.handshake(tls_stream).await.unwrap();
             // spawn a task to poll the connection and drive the HTTP state
             tokio::spawn(async move {

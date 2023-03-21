@@ -34,7 +34,7 @@ use crate::proxy::inbound::InboundConnect::{DirectPath, Hbone};
 use crate::proxy::{ProxyInputs, TraceParent, BAGGAGE_HEADER, TRACEPARENT_HEADER};
 use crate::rbac::Connection;
 use crate::socket::to_canonical;
-use crate::tls::TlsError;
+use crate::tls::{SslAcceptor, SslStream, TlsError};
 use crate::workload::{Workload, WorkloadInformation};
 use crate::{proxy, rbac};
 
@@ -79,13 +79,13 @@ impl Inbound {
 
     pub(super) async fn run(self) {
         let (tx, rx) = oneshot::channel();
-        let service = make_service_fn(|socket: &tokio_boring::SslStream<TcpStream>| {
+        let service = make_service_fn(|socket: &SslStream<TcpStream>| {
             let dst = crate::socket::orig_dst_addr_or_default(socket.get_ref());
             let conn = rbac::Connection {
                 src_identity: socket
                     .ssl()
                     .peer_certificate()
-                    .and_then(|x| crate::tls::boring::extract_sans(&x).first().cloned()),
+                    .and_then(|x| crate::tls::extract_sans(&x).first().cloned()),
                 src_ip: to_canonical(socket.get_ref().peer_addr().unwrap()).ip(),
                 dst,
             };
@@ -401,7 +401,7 @@ struct InboundCertProvider {
 
 #[async_trait::async_trait]
 impl crate::tls::CertProvider for InboundCertProvider {
-    async fn fetch_cert(&mut self, fd: &TcpStream) -> Result<boring::ssl::SslAcceptor, TlsError> {
+    async fn fetch_cert(&mut self, fd: &TcpStream) -> Result<SslAcceptor, TlsError> {
         let orig_dst_addr = crate::socket::orig_dst_addr_or_default(fd);
         let identity = {
             let wip = orig_dst_addr.ip();

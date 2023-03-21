@@ -19,7 +19,7 @@ use std::str::FromStr;
 use std::task::Poll;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use boring::asn1::{Asn1Time, Asn1TimeRef};
+use boring::asn1::Asn1Time;
 use boring::bn::BigNum;
 use boring::ec::{EcGroup, EcKey};
 use boring::hash::MessageDigest;
@@ -46,6 +46,12 @@ use crate::config::RootCert;
 use crate::identity::{self, Identity};
 
 use super::Error;
+
+pub use boring::asn1::Asn1TimeRef;
+pub use boring::error::ErrorStack;
+pub use boring::ssl::{ConnectConfiguration, SslAcceptor};
+pub use boring::x509::X509;
+pub use tokio_boring::{connect, HandshakeError, SslStream};
 
 pub fn asn1_time_to_system_time(time: &Asn1TimeRef) -> SystemTime {
     let unix_time = Asn1Time::from_unix(0).unwrap().diff(time).unwrap();
@@ -448,7 +454,7 @@ impl CertProvider for ControlPlaneCertProvider {
 }
 
 #[derive(Clone)]
-pub struct BoringTlsAcceptor<F: CertProvider> {
+pub struct TlsAcceptor<F: CertProvider> {
     /// Acceptor is a function that determines the TLS context to use. As input, the FD of the client
     /// connection is provided.
     pub acceptor: F,
@@ -474,7 +480,7 @@ pub enum TlsError {
     SslError(#[from] Error),
 }
 
-impl<F> tls_listener::AsyncTls<AddrStream> for BoringTlsAcceptor<F>
+impl<F> tls_listener::AsyncTls<AddrStream> for TlsAcceptor<F>
 where
     F: CertProvider + Clone + 'static,
 {

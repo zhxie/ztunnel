@@ -27,19 +27,17 @@ use tokio_stream::{Stream, StreamExt};
 use tracing::{debug, error, info, warn};
 
 use crate::signal;
-use crate::tls::{BoringTlsAcceptor, CertProvider, TlsError};
+use crate::tls::{CertProvider, SslStream, TlsAcceptor, TlsError};
 
 pub fn tls_server<T: CertProvider + Clone + 'static>(
     acceptor: T,
     listener: TcpListener,
-) -> impl Stream<
-    Item = Result<tokio_boring::SslStream<TcpStream>, tls_listener::Error<io::Error, TlsError>>,
-> {
-    let boring_acceptor = BoringTlsAcceptor { acceptor };
+) -> impl Stream<Item = Result<SslStream<TcpStream>, tls_listener::Error<io::Error, TlsError>>> {
+    let tls_acceptor = TlsAcceptor { acceptor };
     let mut listener = AddrIncoming::from_listener(listener).expect("server bind");
     listener.set_nodelay(true);
 
-    tls_listener::builder(boring_acceptor)
+    tls_listener::builder(tls_acceptor)
         .listen(listener)
         .filter(|conn| {
             // Avoid 'By default, if a client fails the TLS handshake, that is treated as an error, and the TlsListener will return an Err'

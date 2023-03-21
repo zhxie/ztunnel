@@ -18,7 +18,6 @@ use std::sync::Arc;
 use std::time::Duration;
 use std::{fmt, io};
 
-use boring::error::ErrorStack;
 use drain::Watch;
 use hyper::{header, Body, Request};
 use rand::Rng;
@@ -33,8 +32,9 @@ use crate::metrics::{traffic, Metrics, Recorder};
 use crate::proxy::inbound_passthrough::InboundPassthrough;
 use crate::proxy::outbound::Outbound;
 use crate::proxy::socks5::Socks5;
+use crate::tls::{self, ErrorStack, HandshakeError};
 use crate::workload::WorkloadInformation;
-use crate::{config, identity, socket, tls};
+use crate::{config, identity, socket};
 
 mod inbound;
 mod inbound_passthrough;
@@ -124,7 +124,7 @@ pub enum Error {
     Io(#[from] io::Error),
 
     #[error("tls handshake failed: {0:?}")]
-    TlsHandshake(#[from] tokio_boring::HandshakeError<TcpStream>),
+    TlsHandshake(#[from] HandshakeError<TcpStream>),
 
     #[error("http handshake failed: {0}")]
     HttpHandshake(#[source] hyper::Error),

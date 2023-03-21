@@ -12,12 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod boring;
+mod boring;
 
 use std::sync::Arc;
 
 pub use crate::tls::boring::*;
-use ::boring::error::ErrorStack;
 use hyper::http::uri::InvalidUri;
 
 #[derive(thiserror::Error, Debug, Clone)]

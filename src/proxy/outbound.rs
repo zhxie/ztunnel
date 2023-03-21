@@ -15,7 +15,6 @@
 use std::net::{IpAddr, SocketAddr};
 use std::time::Instant;
 
-use boring::ssl::ConnectConfiguration;
 use drain::Watch;
 use hyper::header::FORWARDED;
 use hyper::StatusCode;
@@ -28,6 +27,7 @@ use crate::metrics::traffic;
 use crate::metrics::traffic::Reporter;
 use crate::proxy::inbound::{Inbound, InboundConnect};
 use crate::proxy::{util, Error, ProxyInputs, TraceParent, BAGGAGE_HEADER, TRACEPARENT_HEADER};
+use crate::tls::{connect, ConnectConfiguration, HandshakeError, SslStream};
 use crate::workload::{Protocol, Workload};
 use crate::{proxy, rbac, socket};
 
@@ -470,10 +470,10 @@ enum RequestType {
 pub async fn connect_tls(
     mut connector: ConnectConfiguration,
     stream: TcpStream,
-) -> Result<tokio_boring::SslStream<TcpStream>, tokio_boring::HandshakeError<TcpStream>> {
+) -> Result<SslStream<TcpStream>, HandshakeError<TcpStream>> {
     connector.set_verify_hostname(false);
     connector.set_use_server_name_indication(false);
-    tokio_boring::connect(connector, "", stream).await
+    connect(connector, "", stream).await
 }
 
 #[cfg(test)]

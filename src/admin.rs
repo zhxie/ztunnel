@@ -18,8 +18,6 @@ use std::sync::Arc;
 
 use std::{net::SocketAddr, time::Duration};
 
-use boring::asn1::Asn1TimeRef;
-use boring::x509::X509;
 use drain::Watch;
 #[cfg(feature = "gperftools")]
 use gperftools::heap_profiler::HEAP_PROFILER;
@@ -36,7 +34,7 @@ use tracing::error;
 use crate::config::Config;
 use crate::hyper_util::{empty_response, plaintext_response, Server};
 use crate::identity::SecretManager;
-use crate::tls::asn1_time_to_system_time;
+use crate::tls::{asn1_time_to_system_time, Asn1TimeRef, X509};
 use crate::version::BuildInfo;
 use crate::workload::LocalConfig;
 use crate::workload::WorkloadInformation;
