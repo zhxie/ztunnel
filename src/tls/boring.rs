@@ -54,6 +54,10 @@ pub use boring::ssl::{ConnectConfiguration, SslAcceptor};
 pub use boring::x509::X509;
 pub use tokio_boring::{connect, HandshakeError, SslStream};
 
+pub fn version() -> &'static str {
+    boring::version::version()
+}
+
 pub fn asn1_time_to_system_time(time: &Asn1TimeRef) -> SystemTime {
     let unix_time = Asn1Time::from_unix(0).unwrap().diff(time).unwrap();
     SystemTime::UNIX_EPOCH

@@ -17,6 +17,8 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::string::String;
 
+use crate::tls;
+
 const BUILD_VERSION: &str = env!("ZTUNNEL_BUILD_buildVersion");
 const BUILD_GIT_REVISION: &str = env!("ZTUNNEL_BUILD_buildGitRevision");
 const BUILD_STATUS: &str = env!("ZTUNNEL_BUILD_buildStatus");
@@ -31,6 +33,7 @@ pub struct BuildInfo {
     build_status: String,
     git_tag: String,
     pub istio_version: String,
+    ssl_version: String,
 }
 
 impl BuildInfo {
@@ -42,13 +45,14 @@ impl BuildInfo {
             build_status: BUILD_STATUS.to_string(),
             git_tag: BUILD_TAG.to_string(),
             istio_version: env::var("ISTIO_VERSION").unwrap_or_else(|_| "unknown".to_string()),
+            ssl_version: tls::version().to_string(),
         }
     }
 }
 
 impl Display for BuildInfo {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "version.BuildInfo{{Version:\"{}\", GitRevision:\"{}\", RustVersion:\"{}\", BuildStatus:\"{}\", GitTag:\"{}\", IstioVersion:\"{}\"}}",
-        self.version, self.git_revision, self.rust_version, self.build_status, self.git_tag, self.istio_version)
+        write!(f, "version.BuildInfo{{Version:\"{}\", GitRevision:\"{}\", RustVersion:\"{}\", BuildStatus:\"{}\", GitTag:\"{}\", IstioVersion:\"{}\", SslVersion:\"{}\"}}",
+        self.version, self.git_revision, self.rust_version, self.build_status, self.git_tag, self.istio_version, self.ssl_version)
     }
 }
