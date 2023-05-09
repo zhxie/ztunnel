@@ -2,3 +2,5 @@ out/
 var/
 .idea/
 .vscode/
+vendor/openssl/*
+!vendor/openssl/build.sh
