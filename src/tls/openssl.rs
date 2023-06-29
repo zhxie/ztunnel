@@ -30,7 +30,7 @@ use openssl::hash::MessageDigest;
 use openssl::nid::Nid;
 use openssl::pkey;
 use openssl::pkey::{PKey, Private};
-use openssl::ssl::{self, Ssl, SslContextBuilder};
+use openssl::ssl::{self, Ssl, SslContextBuilder, SslMode};
 use openssl::stack::Stack;
 use openssl::x509::extension::{
     AuthorityKeyIdentifier, BasicConstraints, ExtendedKeyUsage, KeyUsage, SubjectAlternativeName,
@@ -301,6 +301,9 @@ impl Certs {
     }
 
     fn setup_ctx(&self, conn: &mut SslContextBuilder) -> Result<(), Error> {
+        // Enable async mode if there are async-enabled engines.
+        conn.set_mode(SslMode::ASYNC);
+
         // general TLS options
         conn.set_alpn_protos(Alpn::H2.encode())?;
         conn.set_min_proto_version(Some(ssl::SslVersion::TLS1_3))?;
